@@ -4,20 +4,13 @@ import FallingPixels from './components/FallingPixels';
 
 function App() {
   const [multiplier, setMultiplier] = useState<number | null>(null);
-  const [isAnimating, setIsAnimating] = useState(false);
   const [history, setHistory] = useState<number[]>([]);
 
   const generateMultiplier = () => {
-    setIsAnimating(true);
-    setMultiplier(null);
-
-    setTimeout(() => {
-      const random = 1.01 + Math.random() * (12.03 - 1.01);
-      const newMultiplier = Number(random.toFixed(2));
-      setMultiplier(newMultiplier);
-      setHistory((prev) => [newMultiplier, ...prev.slice(0, 19)]);
-      setIsAnimating(false);
-    }, 500);
+    const random = 1.01 + Math.random() * (12.01 - 1.01);
+    const newMultiplier = Number(random.toFixed(2));
+    setMultiplier(newMultiplier);
+    setHistory((prev) => [newMultiplier, ...prev.slice(0, 19)]);
   };
 
   return (
@@ -51,7 +44,7 @@ function App() {
       )}
 
       <div className="relative z-10 flex flex-col items-center gap-8">
-        {multiplier && !isAnimating && (
+        {multiplier && (
           <div className="animate-scale-in">
             <div className="text-6xl font-bold text-white drop-shadow-2xl">
               {multiplier.toFixed(2)}x
@@ -61,8 +54,7 @@ function App() {
 
         <button
           onClick={generateMultiplier}
-          disabled={isAnimating}
-          className="px-12 py-4 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black text-2xl font-bold rounded-2xl shadow-2xl transform transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-10 py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black text-xl font-bold rounded-2xl shadow-2xl transform transition-all hover:scale-105 active:scale-95"
         >
           Получить
         </button>

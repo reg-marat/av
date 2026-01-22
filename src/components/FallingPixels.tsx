@@ -17,7 +17,7 @@ export default function FallingPixels() {
       left: Math.random() * 100,
       animationDuration: 3 + Math.random() * 4,
       delay: Math.random() * 5,
-      size: 4 + Math.random() * 4,
+      size: 2 + Math.random() * 2,
     }));
     setPixels(pixelArray);
   }, []);
