@@ -69,30 +69,30 @@ function App() {
           Получить
         </button>
 
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 shadow-2xl border border-white/20 max-w-md w-full">
-          <div className="text-center mb-4">
-            <p className="text-white/90 text-sm font-light leading-relaxed mb-4">
-              Бот подключен и готов к работе. Текущая синхронизация коэффициентов - 45%. Для синхронизации на 100% введи дополнительный пароль.
-            </p>
-            {isPrecisionUpgraded && (
-              <p className="text-yellow-400 text-sm font-medium">
-                Точность 99%
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 shadow-2xl border border-white/20 max-w-sm w-full">
+          <div className="text-center">
+            {isPrecisionUpgraded ? (
+              <p className="text-yellow-400 text-xs font-light leading-relaxed">
+                Бот подключен и готов к работе. Текущая синхронизация коэффициентов - 99%
               </p>
+            ) : (
+              <>
+                <p className="text-white/90 text-xs font-light leading-relaxed mb-3">
+                  Бот подключен и готов к работе. Текущая синхронизация коэффициентов - 45%. Для синхронизации на 100% введи дополнительный пароль.
+                </p>
+                <button
+                  onClick={() => setShowPasswordModal(true)}
+                  className="w-full px-4 py-2 bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-black font-bold rounded-xl shadow-lg transform transition-all hover:scale-105 active:scale-95 text-xs"
+                >
+                  Повысить точность до 100%
+                </button>
+              </>
             )}
           </div>
-
-          {!isPrecisionUpgraded && (
-            <button
-              onClick={() => setShowPasswordModal(true)}
-              className="w-full px-6 py-3 bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-black font-bold rounded-xl shadow-lg transform transition-all hover:scale-105 active:scale-95 text-sm"
-            >
-              Повысить точность до 100%
-            </button>
-          )}
         </div>
 
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 shadow-2xl border border-white/20 max-w-md w-full">
-          <p className="text-center text-white/70 text-sm font-light">
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 shadow-2xl border border-white/20 max-w-sm w-full">
+          <p className="text-center text-white/70 text-xs font-light">
             При возникновении вопросов - @kek13
           </p>
         </div>
