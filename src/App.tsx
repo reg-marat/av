@@ -53,8 +53,8 @@ function App() {
         </div>
       )}
 
-      <div className="relative z-10 w-full h-full flex flex-col items-center justify-between py-20 px-4">
-        <div className="flex-1 flex flex-col items-center justify-center">
+      <div className="relative z-10 w-full h-full flex flex-col items-center justify-center px-4">
+        <div className="flex flex-col items-center justify-center">
           {multiplier && (
             <div key={animationKey} className="animate-scale-in">
               <div className="text-6xl font-bold text-white drop-shadow-2xl">
@@ -70,35 +70,43 @@ function App() {
             Получить
           </button>
         </div>
+      </div>
 
-        <div className="flex flex-col items-center gap-3 w-full max-w-sm">
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 shadow-2xl border border-white/20 w-full">
-            <div className="text-center">
-              {isPrecisionUpgraded ? (
-                <p className="text-yellow-400 text-xs font-light leading-relaxed">
-                  Бот подключен и готов к работе. Текущая синхронизация коэффициентов - 99%
+      <div className="absolute bottom-6 left-0 right-0 z-20 flex flex-col items-center gap-3 px-4">
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 shadow-2xl border border-white/20 w-full max-w-sm">
+          <div className="text-center">
+            {isPrecisionUpgraded ? (
+              <p className="text-yellow-400 text-xs font-light leading-relaxed">
+                Бот подключен и готов к работе. Текущая синхронизация коэффициентов - 99%
+              </p>
+            ) : (
+              <>
+                <p className="text-white/90 text-xs font-light leading-relaxed mb-3">
+                  Бот подключен и готов к работе. Текущая синхронизация коэффициентов - 45%. Для синхронизации на 100% введи дополнительный пароль.
                 </p>
-              ) : (
-                <>
-                  <p className="text-white/90 text-xs font-light leading-relaxed mb-3">
-                    Бот подключен и готов к работе. Текущая синхронизация коэффициентов - 45%. Для синхронизации на 100% введи дополнительный пароль.
-                  </p>
-                  <button
-                    onClick={() => setShowPasswordModal(true)}
-                    className="w-full px-4 py-2 bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-black font-bold rounded-xl shadow-lg transform transition-all hover:scale-105 active:scale-95 text-xs"
-                  >
-                    Повысить точность до 100%
-                  </button>
-                </>
-              )}
-            </div>
+                <button
+                  onClick={() => setShowPasswordModal(true)}
+                  className="w-full px-4 py-2 bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-black font-bold rounded-xl shadow-lg transform transition-all hover:scale-105 active:scale-95 text-xs"
+                >
+                  Повысить точность до 100%
+                </button>
+              </>
+            )}
           </div>
+        </div>
 
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 shadow-2xl border border-white/20 w-full">
-            <p className="text-center text-white/70 text-xs font-light">
-              При возникновении вопросов - @kek13
-            </p>
-          </div>
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 shadow-2xl border border-white/20 w-full max-w-sm">
+          <p className="text-center text-white/70 text-xs font-light">
+            При возникновении вопросов -{' '}
+            <a
+              href="https://t.me/kek13"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-yellow-400 hover:text-yellow-500 transition-colors"
+            >
+              @kek13
+            </a>
+          </p>
         </div>
       </div>
 

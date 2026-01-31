@@ -37,19 +37,19 @@ export default function PasswordGate({
   if (isModal && onClose) {
     return (
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-2xl border border-white/20 max-w-md w-full relative">
+        <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 shadow-2xl border border-white/20 max-w-sm w-full relative">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-white/60 hover:text-white transition-colors"
+            className="absolute top-2 right-2 text-white/60 hover:text-white transition-colors"
           >
-            <X size={24} />
+            <X size={16} />
           </button>
 
-          <h1 className="text-3xl font-bold text-white text-center mb-6 drop-shadow-lg">
+          <h1 className="text-sm font-bold text-white text-center mb-2 drop-shadow-lg">
             {title}
           </h1>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-2">
             <input
               type="password"
               inputMode="numeric"
@@ -57,19 +57,19 @@ export default function PasswordGate({
               value={password}
               onChange={handleChange}
               placeholder="Введите код"
-              className="px-6 py-4 bg-white/20 border-2 border-white/30 rounded-xl text-white text-center text-2xl font-bold placeholder-white/50 focus:outline-none focus:border-yellow-400 transition-all"
+              className="px-3 py-2 bg-white/20 border-2 border-white/30 rounded-lg text-white text-center text-base font-bold placeholder-white/50 focus:outline-none focus:border-yellow-400 transition-all"
               autoFocus
             />
 
             <button
               type="submit"
-              className="px-10 py-4 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black text-xl font-bold rounded-xl shadow-2xl transform transition-all hover:scale-105 active:scale-95"
+              className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black text-sm font-bold rounded-lg shadow-lg transform transition-all hover:scale-105 active:scale-95"
             >
               Отправить
             </button>
 
             {error && (
-              <p className="text-red-400 text-center font-medium animate-shake">
+              <p className="text-red-400 text-center text-xs font-medium animate-shake">
                 Пароль неверный
               </p>
             )}
