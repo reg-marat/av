@@ -32,7 +32,7 @@ export default function Screen4() {
         <div className="absolute top-2 left-0 right-0 z-20 flex justify-center px-2">
           <div className="text-center">
             <p className="text-xs font-light text-white/70 mb-1 tracking-wide">
-              История коэффициентов
+               
             </p>
             <div className="flex flex-wrap gap-1 justify-center max-w-sm">
               {history.map((value, idx) => (
@@ -59,7 +59,7 @@ export default function Screen4() {
             onClick={generateMultiplier}
             className="mt-8 px-8 py-2 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black text-lg font-bold rounded-2xl shadow-2xl transform transition-all hover:scale-105 active:scale-95"
           >
-            Получить
+            MOSTRA COEFFICIENTE
           </button>
         </div>
       </div>
@@ -68,21 +68,21 @@ export default function Screen4() {
         <div className="bg-white/10 backdrop-blur-md rounded-xl p-2 shadow-2xl border border-white/20 w-full max-w-sm">
           <div className="text-center">
             <p className="text-yellow-400 text-xs font-light leading-relaxed">
-              Бот подключен и готов к работе. Текущая синхронизация коэффициентов - 99%
+              Il bot è connesso e pronto a funzionare. Sincronizzazione attuale dei coefficienti - 99%
             </p>
           </div>
         </div>
 
         <div className="bg-white/10 backdrop-blur-md rounded-xl p-2 shadow-2xl border border-white/20 w-full max-w-sm">
           <p className="text-center text-white/70 text-xs font-light">
-            При возникновении вопросов -{' '}
+            Se hai qualche domanda -{' '}
             <a
               href="https://t.me/kek13"
               target="_blank"
               rel="noopener noreferrer"
               className="text-yellow-400 hover:text-yellow-500 transition-colors"
             >
-              @kek13
+              @creatore_del_bot
             </a>
           </p>
         </div>
