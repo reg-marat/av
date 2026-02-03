@@ -81,7 +81,7 @@ export default function Screen3({ onPasswordSuccess, onModalClose }: Screen3Prop
 
         <div className="bg-white/10 backdrop-blur-md rounded-xl p-2 shadow-2xl border border-white/20 w-full max-w-sm">
           <p className="text-center text-white/70 text-xs font-light">
-            При возникновении вопросов -{' '}
+            Se hai qualche domanda -{' '}
             <a
               href="https://t.me/kek13"
               target="_blank"
