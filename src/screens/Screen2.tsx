@@ -92,7 +92,7 @@ export default function Screen2({ onPrecisionUpgradeClick }: Screen2Props) {
               rel="noopener noreferrer"
               className="text-yellow-400 hover:text-yellow-500 transition-colors"
             >
-              @creatore del bot
+              @creatore_del_bot
             </a>
           </p>
         </div>
