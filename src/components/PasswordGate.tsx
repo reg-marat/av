@@ -56,7 +56,7 @@ export default function PasswordGate({
               pattern="[0-9]*"
               value={password}
               onChange={handleChange}
-              placeholder="Введите код"
+              placeholder="Inserisci il codice"
               className="px-3 py-2 bg-white/20 border-2 border-white/30 rounded-lg text-white text-center text-base font-bold placeholder-white/50 focus:outline-none focus:border-yellow-400 transition-all"
               autoFocus
             />
@@ -65,12 +65,12 @@ export default function PasswordGate({
               type="submit"
               className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black text-sm font-bold rounded-lg shadow-lg transform transition-all hover:scale-105 active:scale-95"
             >
-              Отправить
+              Inviare
             </button>
 
             {error && (
               <p className="text-red-400 text-center text-xs font-medium animate-shake">
-                Пароль неверный
+                La password non è corretta
               </p>
             )}
           </form>
@@ -114,7 +114,7 @@ export default function PasswordGate({
               pattern="[0-9]*"
               value={password}
               onChange={handleChange}
-              placeholder="Введите код"
+              placeholder="Inserisci la tua password"
               className="px-3 py-2 bg-white/20 border-2 border-white/30 rounded-lg text-white text-center text-base font-bold placeholder-white/50 focus:outline-none focus:border-yellow-400 transition-all"
               autoFocus
             />
@@ -123,12 +123,12 @@ export default function PasswordGate({
               type="submit"
               className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black text-sm font-bold rounded-lg shadow-lg transform transition-all hover:scale-105 active:scale-95"
             >
-              Отправить
+              Inviare
             </button>
 
             {error && (
               <p className="text-red-400 text-center text-xs font-medium animate-shake">
-                Пароль неверный
+                La password non è corretta
               </p>
             )}
           </form>
