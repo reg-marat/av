@@ -88,7 +88,7 @@ export default function Screen3({ onPasswordSuccess, onModalClose }: Screen3Prop
               rel="noopener noreferrer"
               className="text-yellow-400 hover:text-yellow-500 transition-colors"
             >
-              @kek13
+              @creatore_del_bot
             </a>
           </p>
         </div>
@@ -99,7 +99,7 @@ export default function Screen3({ onPasswordSuccess, onModalClose }: Screen3Prop
         onClose={onModalClose}
         onSuccess={onPasswordSuccess}
         correctPassword="2801"
-        title="Введите пароль"
+        title="Inserisci la tua password"
       />
 
       <style>{`
