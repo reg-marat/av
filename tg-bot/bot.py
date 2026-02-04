@@ -1,113 +1,125 @@
 import os
 import re
 import asyncio
-from telethon import TelegramClient, events
-from telethon.sessions import MemorySession
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    CallbackQueryHandler,
+    MessageHandler,
+    filters,
+    ContextTypes,
+)
 
 # ===========================
-# ПЕРЕМЕННЫЕ (НАСТРОЙКИ)
+# НАСТРОЙКИ
 # ===========================
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-# Твои чаты (ты их уже дал)
-LOG_CHAT_ID = -1003671787625        # сюда идут ВСЕ логи
-POSTBACK_CHAT_ID = -1003712583340   # сюда приходят постбеки
+LOG_CHAT_ID = -1003671787625       # твой лог-чат
+POSTBACK_CHAT_ID = -1003712583340  # чат с постбеками
 
-# Регулярка, чтобы вытащить ID между ==
+# ищем ID между ==...==
 ID_PATTERN = re.compile(r"==(\d+)==")
 
 # ===========================
-# ИНИЦИАЛИЗАЦИЯ БОТА
+# УТИЛИТА ДЛЯ ЛОГОВ
 # ===========================
 
-client = TelegramClient(
-    MemorySession(),
-    api_id=0,
-    api_hash=""
-).start(bot_token=BOT_TOKEN)
-
-print("✅ Bot started and running...")
-
-# ===========================
-# УТИЛИТЫ
-# ===========================
-
-async def log(message: str):
-    """Отправляет логи в отдельный чат"""
+async def send_log(app: Application, text: str):
     try:
-        await client.send_message(LOG_CHAT_ID, f"📡 LOG: {message}")
+        await app.bot.send_message(chat_id=LOG_CHAT_ID, text=f"📡 LOG: {text}")
     except Exception as e:
-        print(f"❌ Ошибка логирования: {e}")
+        print(f"Ошибка логирования: {e}")
 
 # ===========================
 # /START
 # ===========================
 
-@client.on(events.NewMessage(pattern="/start"))
-async def start_handler(event):
-    user_id = event.sender_id
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
 
-    await log(f"Пользователь {user_id} нажал /start")
+    await send_log(context.application, f"Пользователь {user_id} нажал /start")
 
-    buttons = [
-        [("📱 Открыть Web App", "open_webapp")],
-        [("ℹ️ Инструкция", "help")]
+    keyboard = [
+        [InlineKeyboardButton("📱 Открыть Web App", callback_data="open_webapp")],
+        [InlineKeyboardButton("ℹ️ Инструкция", callback_data="help")],
     ]
 
-    await event.respond(
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    await update.message.reply_text(
         "👋 Привет! Я твой основной бот.\n\n"
-        "Я помогу тебе пройти регистрацию и доступ к веб-приложению.\n\n"
+        "Я помогу тебе пройти регистрацию и получить доступ к веб-приложению.\n\n"
         "Выбери действие:",
-        buttons=buttons
+        reply_markup=reply_markup,
     )
 
 # ===========================
 # ОБРАБОТКА КНОПОК
 # ===========================
 
-@client.on(events.CallbackQuery)
-async def callback_handler(event):
-    user_id = event.sender_id
-    data = event.data.decode()
+async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    user_id = query.from_user.id
+    data = query.data
 
-    await log(f"Пользователь {user_id} нажал кнопку: {data}")
+    await send_log(context.application, f"Пользователь {user_id} нажал кнопку: {data}")
 
     if data == "help":
-        await event.answer(
-            "Сначала зарегистрируйся у партнёра, затем внеси депозит. "
-            "После депозита я выдам тебе пароль к Web App.",
-            alert=True
+        await query.answer(
+            "Сначала зарегистрируйся, затем внеси депозит. "
+            "После депозита я выдам тебе пароль.",
+            show_alert=True,
         )
 
     elif data == "open_webapp":
-        await event.answer(
-            "Скоро здесь будет кнопка Web App — добавим на следующем шаге.",
-            alert=True
+        await query.answer(
+            "Кнопку Web App добавим на следующем шаге.",
+            show_alert=True,
         )
 
 # ===========================
 # ЧТЕНИЕ ПОСТБЕК-ЧАТА
 # ===========================
 
-@client.on(events.NewMessage(chats=POSTBACK_CHAT_ID))
-async def postback_handler(event):
-    text = event.text or ""
+async def postback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # реагируем ТОЛЬКО на нужный чат
+    if update.effective_chat.id != POSTBACK_CHAT_ID:
+        return
+
+    text = update.message.text or ""
 
     match = ID_PATTERN.search(text)
     if not match:
-        await log(f"⚠️ Постбек без понятного ID: {text}")
+        await send_log(context.application, f"⚠️ Постбек без понятного ID: {text}")
         return
 
     user_id = int(match.group(1))
 
-    await log(f"📩 Получен постбек для пользователя: {user_id}")
+    await send_log(
+        context.application,
+        f"📩 Получен постбек для пользователя: {user_id}"
+    )
 
-    # ПОКА ПРОСТО ЛОГ — дальше мы сюда добавим логику
-    # (регистрация → депозит → выдача пароля)
+    # сюда дальше добавим логику:
+    # - регистрация → попросить депозит
+    # - депозит → выдать пароль
 
 # ===========================
-# ЗАПУСК
+# ЗАПУСК БОТА
 # ===========================
 
-client.run_until_disconnected()
+def main():
+    app = Application.builder().token(BOT_TOKEN).build()
+
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CallbackQueryHandler(button_handler))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, postback_handler))
+
+    print("✅ Bot started and running...")
+    app.run_polling()
+
+if __name__ == "__main__":
+    main()
