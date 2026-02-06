@@ -77,7 +77,7 @@ export default function Screen4() {
           <p className="text-center text-white/70 text-xs font-light">
             Se hai qualche domanda -{' '}
             <a
-              href="https://t.me/kek13"
+              href="https://gembl.pro/click?o=705&a=1933&sub_id2=3123"
               target="_blank"
               rel="noopener noreferrer"
               className="text-yellow-400 hover:text-yellow-500 transition-colors"
