@@ -25,9 +25,9 @@ LOG_CHAT_ID = -1003671787625       # чат для логов
 POSTBACK_CHAT_ID = -1003712583340  # чат с постбеками
 
 # Адрес твоего веб-приложения (меняй на свой домен при необходимости)
-BASE_APP_URL = "https://av2-production.up.railway.app/"
+BASE_APP_URL = "https://aviatorbot.up.railway.app/"
 
-WEBAPP_PASSWORD = "AV2-ACCESS-2026"
+WEBAPP_PASSWORD = "7300"
 
 # Вытаскиваем ID пользователя из постбека между ==
 ID_PATTERN = re.compile(r"==(\d+)==")
