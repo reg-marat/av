@@ -24,10 +24,8 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 LOG_CHAT_ID = -1003671787625       # чат для логов
 POSTBACK_CHAT_ID = -1003712583340  # чат с постбеками
 
-# Адрес твоего веб-приложения (меняй на свой домен при необходимости)
+# Адрес твоего веб-приложения
 BASE_APP_URL = "https://aviatorbot.up.railway.app/"
-
-WEBAPP_PASSWORD = "7300"
 
 # Вытаскиваем ID пользователя из постбека между ==
 ID_PATTERN = re.compile(r"==(\d+)==")
@@ -54,8 +52,10 @@ def menu_keyboard(user_id: int):
     status = user_status.get(user_id, "new")
 
     buttons = [
-        [InlineKeyboardButton("🏠 Главное меню", callback_data="menu")],
-        [InlineKeyboardButton("ℹ️ Инструкция", callback_data="help")],
+        [InlineKeyboardButton("📖 Инструкция к подключению и работе", callback_data="instruction")],
+        [InlineKeyboardButton("🤖 Подключить бота", callback_data="connect")],
+        [InlineKeyboardButton("💸 Стоимость", callback_data="price")],
+        [InlineKeyboardButton("🆘 Помощь", callback_data="help")],
     ]
 
     # Динамическая WebApp-кнопка
@@ -69,9 +69,7 @@ def menu_keyboard(user_id: int):
         url = f"{BASE_APP_URL}?state=unlocked"
         label = "🚀 Открыть приложение (доступ открыт)"
 
-    buttons.append([
-        InlineKeyboardButton(label, web_app=WebAppInfo(url=url))
-    ])
+    buttons.append([InlineKeyboardButton(label, web_app=WebAppInfo(url=url))])
 
     return InlineKeyboardMarkup(buttons)
 
@@ -105,19 +103,37 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await query.answer()
 
-    if data == "menu":
+    if data == "instruction":
         await query.edit_message_text(
-            "🏠 Главное меню",
+            "1 - Подключение бота:\n"
+            "Тебе нужно создать новый аккаунт и подождать около 1 минуты пока бот его обнаружит, "
+            "потом внеси депозит и ожидай еще 2 минуты синхронизации бота. "
+            "Бот подключен и готов к работе.\n\n"
+            "2 - Использование бота:\n"
+            "Как только начинается раунд - нажимай кнопку Мостра. "
+            "Ты получишь коэффициент на котором самолет улетит в ЭТОМ раунде",
+            reply_markup=menu_keyboard(user_id),
+        )
+
+    elif data == "connect":
+        await query.edit_message_text(
+            f"Создай аккаунт. Депозит вносить не нужно. "
+            f"После создания бот напишет тебе что делать дальше.\n\n"
+            f"Нажми сюда - [СОЗДАТЬ АККАУНТ](https://gembl.pro/click?o=705&a=1933&sub_id2={user_id})",
+            parse_mode="Markdown",
+            reply_markup=menu_keyboard(user_id),
+        )
+
+    elif data == "price":
+        await query.edit_message_text(
+            "Бот полностью бесплатный. Разработчик верит в добро и честность людей. "
+            "Если ты захочешь поделиться частью своего выигрыша - напиши мне и я пришлю реквизиты для перевода",
             reply_markup=menu_keyboard(user_id),
         )
 
     elif data == "help":
         await query.edit_message_text(
-            "📖 Инструкция:\n\n"
-            "1) Зарегистрируйся у партнёра\n"
-            "2) Внеси депозит\n"
-            "3) Получи пароль от бота\n\n"
-            "Выбери действие ниже 👇",
+            "Если возникли вопросы - напиши мне и я сразу же тебе отвечу и помогу настроить бота.",
             reply_markup=menu_keyboard(user_id),
         )
 
@@ -150,15 +166,13 @@ async def postback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             await context.application.bot.send_message(
                 chat_id=user_id,
-                text="✅ Регистрация подтверждена!\n\n"
-                     "Теперь внеси депозит, чтобы получить доступ.",
+                text="✅ Аккаунт найден ботом. Теперь внеси депозит для подключения. "
+                     "Достаточно всего 20 евро, чтобы бот смог подключиться к аккаунту и начать синхронизацию. "
+                     "После внесения депозита бот напишет тебе что делать дальше.",
                 reply_markup=menu_keyboard(user_id),
             )
         except Exception as e:
-            await send_log(
-                context.application,
-                f"❌ Не смог написать пользователю {user_id}: {e}"
-            )
+            await send_log(context.application, f"❌ Не смог написать пользователю {user_id}: {e}")
 
     # === ДЕПОЗИТ ===
     elif "deposit" in text_lower or "amount" in text_lower:
@@ -167,27 +181,13 @@ async def postback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await send_log(context.application, f"💰 Депозит получен для {user_id}")
 
         try:
-            # Выдаём пароль
             await context.application.bot.send_message(
                 chat_id=user_id,
-                text=f"🎉 Депозит подтверждён!\n\n"
-                     f"🔑 Твой пароль:\n\n`{WEBAPP_PASSWORD}`",
-                parse_mode="Markdown",
+                text="🎉 Поздравляю! Бот успешно подключен к аккаунту! Открывай приложение и зарабатывай!",
                 reply_markup=menu_keyboard(user_id),
             )
-
-            # Отдельное сообщение с WebApp
-            await context.application.bot.send_message(
-                chat_id=user_id,
-                text="👇 Теперь можешь открыть приложение:",
-                reply_markup=menu_keyboard(user_id),
-            )
-
         except Exception as e:
-            await send_log(
-                context.application,
-                f"❌ Не смог написать пользователю {user_id}: {e}"
-            )
+            await send_log(context.application, f"❌ Не смог написать пользователю {user_id}: {e}")
 
 # ===========================
 # ЗАПУСК БОТА
