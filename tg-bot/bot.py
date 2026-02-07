@@ -56,7 +56,7 @@ def menu_keyboard(user_id: int):
         [InlineKeyboardButton("📖 Инструкция к подключению и работе", callback_data="instruction")],
         [InlineKeyboardButton("🤖 Подключить бота", callback_data="connect")],
         [InlineKeyboardButton("💸 Стоимость", callback_data="price")],
-        [InlineKeyboardButton("🆘 Помощь", callback_data="help")],
+        [InlineKeyboardButton("🆘 Помощь", url="tg://user?id=8272327693")],
     ]
 
     # ======= ИЗМЕНЁННЫЙ БЛОК (ТОЛЬКО ЭТО Я ДОБАВИЛ) =======
@@ -159,7 +159,7 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif data == "help":
         await query.edit_message_text(
-            "Если возникли вопросы - напиши мне и я сразу же тебе отвечу и помогу настроить бота. tg://openmessage?user_id=8272327693 ",
+            "Если возникли вопросы - напиши мне и я сразу же тебе отвечу и помогу настроить бота.",
             reply_markup=menu_keyboard(user_id),
         )
 
