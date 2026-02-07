@@ -11,7 +11,6 @@ from telegram import (
 from telegram.ext import (
     Application,
     CommandHandler,
-    MessageHandler,
     CallbackQueryHandler,
     filters,
     ContextTypes,
@@ -26,11 +25,6 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 LOG_CHAT_ID = -1003671787625       # чат для логов
 
 BASE_APP_URL = "https://aviatorbot.up.railway.app/"
-
-# Возможные состояния:
-# "new" -> не зарегистрирован
-# "registered" -> зарегистрирован, но без депозита
-# "deposited" -> депозит внесён
 
 user_status = {}
 USERS_FILE = "users.json"
@@ -120,7 +114,52 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 # ===========================
-# ОБРАБОТКА INLINE-КНОПОК (МЕНЮ)
+# ФОНОВЫЕ ЗАДАЧИ (НЕ БЛОКИРУЮТ БОТА)
+# ===========================
+
+async def process_registration(app: Application, user_id: int):
+    await asyncio.sleep(50)
+
+    user_status[user_id] = "registered"
+    save_users()
+
+    await app.bot.send_message(
+        chat_id=user_id,
+        text="✅ Аккаунт обнаружен ботом! Теперь внеси депозит для подключения.\n"
+             "Достаточно всего 20 евро, чтобы бот смог подключиться к аккаунту.",
+        reply_markup=menu_keyboard(user_id),
+    )
+
+    keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("💰 Я ВНЕС ДЕПОЗИТ", callback_data="made_deposit")],
+        [InlineKeyboardButton("⬅️ Назад в меню", callback_data="back_menu")]
+    ])
+
+    await app.bot.send_message(
+        chat_id=user_id,
+        text="Когда сделаешь депозит, нажми на кнопку для активации бота ✅",
+        reply_markup=keyboard,
+    )
+
+    await send_log(app, f"✅ Статус {user_id} → registered")
+
+async def process_deposit(app: Application, user_id: int):
+    await asyncio.sleep(190)
+
+    user_status[user_id] = "deposited"
+    save_users()
+
+    await app.bot.send_message(
+        chat_id=user_id,
+        text="🎉 Депозит обнаружен! Бот успешно подключен.\n"
+             "Теперь можешь открывать приложение и начинать играть 🚀",
+        reply_markup=menu_keyboard(user_id),
+    )
+
+    await send_log(app, f"💰 Статус {user_id} → deposited")
+
+# ===========================
+# ОБРАБОТКА INLINE-КНОПОК
 # ===========================
 
 async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -144,16 +183,38 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
     elif data == "connect":
-        text = (
-            "Когда создашь аккаунт на сайте, нажми на кнопку для подключения бота ✅"
-        )
 
-        keyboard = InlineKeyboardMarkup([
-            [InlineKeyboardButton("🟢 Я СОЗДАЛ АККАУНТ", callback_data="created_account")],
-            [InlineKeyboardButton("⬅️ Назад в меню", callback_data="back_menu")]
-        ])
+        if status == "new":
+            text = (
+                "Когда создашь аккаунт на сайте, нажми на кнопку для подключения бота ✅\n\n"
+                "--- [СОЗДАТЬ АККАУНТ](https://gembl.pro/click?o=705&a=1933&sub_id2={user_id}) ---"
+            ).format(user_id=user_id)
 
-        await query.edit_message_text(text, reply_markup=keyboard)
+            keyboard = InlineKeyboardMarkup([
+                [InlineKeyboardButton("🟢 Я СОЗДАЛ АККАУНТ", callback_data="created_account")],
+                [InlineKeyboardButton("⬅️ Назад в меню", callback_data="back_menu")]
+            ])
+
+            await query.edit_message_text(text, reply_markup=keyboard, parse_mode="Markdown")
+
+        elif status == "registered":
+            text = (
+                "✅ Аккаунт найден ботом. Теперь внеси депозит для подключения.\n\n"
+                "--- [ПРОДОЛЖИТЬ](https://gembl.pro/click?o=705&a=1933&sub_id2={user_id}) ---"
+            ).format(user_id=user_id)
+
+            keyboard = InlineKeyboardMarkup([
+                [InlineKeyboardButton("💰 Я ВНЕС ДЕПОЗИТ", callback_data="made_deposit")],
+                [InlineKeyboardButton("⬅️ Назад в меню", callback_data="back_menu")]
+            ])
+
+            await query.edit_message_text(text, reply_markup=keyboard, parse_mode="Markdown")
+
+        else:  # deposited
+            await query.edit_message_text(
+                "✅ Бот подключен и готов к работе.",
+                reply_markup=menu_keyboard(user_id),
+            )
 
     elif data == "price":
         await query.edit_message_text(
@@ -168,7 +229,6 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=menu_keyboard(user_id),
         )
 
-    # ======== МЕХАНИКА РЕГИСТРАЦИИ ========
     elif data == "created_account":
         await query.edit_message_text(
             "🔍 Бот ищет твой аккаунт, подожди 1-2 минуты. "
@@ -177,35 +237,8 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         await send_log(context.application, f"⏳ Пользователь {user_id} нажал: Я СОЗДАЛ АККАУНТ")
 
-        # Ждём 50 секунд
-        await asyncio.sleep(50)
+        asyncio.create_task(process_registration(context.application, user_id))
 
-        # Меняем статус
-        user_status[user_id] = "registered"
-        save_users()
-
-        await context.application.bot.send_message(
-            chat_id=user_id,
-            text="✅ Аккаунт обнаружен ботом! Теперь внеси депозит для подключения.\n"
-                 "Достаточно всего 20 евро, чтобы бот смог подключиться к аккаунту.",
-            reply_markup=menu_keyboard(user_id),
-        )
-
-        # Отправляем новую кнопку
-        keyboard = InlineKeyboardMarkup([
-            [InlineKeyboardButton("💰 Я ВНЕС ДЕПОЗИТ", callback_data="made_deposit")],
-            [InlineKeyboardButton("⬅️ Назад в меню", callback_data="back_menu")]
-        ])
-
-        await context.application.bot.send_message(
-            chat_id=user_id,
-            text="Когда сделаешь депозит, нажми на кнопку для активации бота ✅",
-            reply_markup=keyboard,
-        )
-
-        await send_log(context.application, f"✅ Статус {user_id} → registered")
-
-    # ======== МЕХАНИКА ДЕПОЗИТА ========
     elif data == "made_deposit":
         await query.edit_message_text(
             "🔄 Бот подключается к аккаунту, ожидайте 1-3 минуты..."
@@ -213,21 +246,7 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         await send_log(context.application, f"⏳ Пользователь {user_id} нажал: Я ВНЕС ДЕПОЗИТ")
 
-        # Ждём 190 секунд
-        await asyncio.sleep(190)
-
-        # Меняем статус
-        user_status[user_id] = "deposited"
-        save_users()
-
-        await context.application.bot.send_message(
-            chat_id=user_id,
-            text="🎉 Депозит обнаружен! Бот успешно подключен.\n"
-                 "Теперь можешь открывать приложение и начинать играть 🚀",
-            reply_markup=menu_keyboard(user_id),
-        )
-
-        await send_log(context.application, f"💰 Статус {user_id} → deposited")
+        asyncio.create_task(process_deposit(context.application, user_id))
 
 # ===========================
 # ЗАПУСК БОТА
