@@ -1,5 +1,6 @@
 import os
 import re
+import json
 from telegram import (
     Update,
     InlineKeyboardButton,
@@ -30,9 +31,35 @@ BASE_APP_URL = "https://aviatorbot.up.railway.app/"
 # Вытаскиваем ID пользователя из постбека между ==
 ID_PATTERN = re.compile(r"==(\d+)==")
 
-# Память состояний пользователей (пока в оперативке)
+# Память состояний пользователей (теперь сохраняем в файл)
 # Возможные состояния: "new", "registered", "deposited"
 user_status = {}
+
+USERS_FILE = "users.json"
+
+# ===========================
+# ЗАГРУЗКА И СОХРАНЕНИЕ СТАТУСОВ
+# ===========================
+
+def load_users():
+    global user_status
+    try:
+        with open(USERS_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            # ключи в JSON — строки, приводим к int
+            user_status = {int(k): v for k, v in data.items()}
+        print(f"📂 Загружены пользователи из {USERS_FILE}: {user_status}")
+    except Exception as e:
+        print(f"⚠️ Не удалось загрузить {USERS_FILE}: {e}")
+        user_status = {}
+
+def save_users():
+    try:
+        with open(USERS_FILE, "w", encoding="utf-8") as f:
+            json.dump({str(k): v for k, v in user_status.items()}, f, ensure_ascii=False, indent=2)
+        print(f"💾 Статусы сохранены в {USERS_FILE}")
+    except Exception as e:
+        print(f"❌ Ошибка сохранения users.json: {e}")
 
 # ===========================
 # ЛОГИ
@@ -51,31 +78,25 @@ async def send_log(app: Application, text: str):
 def menu_keyboard(user_id: int):
     status = user_status.get(user_id, "new")
 
-    # Стандартное меню
     buttons = [
         [InlineKeyboardButton("📖 Инструкция к подключению и работе", callback_data="instruction")],
         [InlineKeyboardButton("🤖 Подключить бота", callback_data="connect")],
         [InlineKeyboardButton("💸 Стоимость", callback_data="price")],
         [InlineKeyboardButton(
-    "🆘 Помощь",
-    url="https://t.me/Dante_Valdes?text=Ciao!%20Ho%20una%20domanda%20sul%20bot")]
+            "🆘 Помощь",
+            url="https://t.me/Dante_Valdes?text=Ciao!%20Ho%20una%20domanda%20sul%20bot"
+        )],
     ]
-
-    # ======= ИЗМЕНЁННЫЙ БЛОК (ТОЛЬКО ЭТО Я ДОБАВИЛ) =======
 
     if status == "new":
         url = f"{BASE_APP_URL}?screen=noreg"
         label = "🔒 Открыть приложение (ожидаем регистрацию)"
-
     elif status == "registered":
         url = f"{BASE_APP_URL}?screen=nodep"
         label = "⏳ Открыть приложение (ожидаем депозит)"
-
     else:  # deposited
-        url = BASE_APP_URL  # стандартная версия
+        url = BASE_APP_URL
         label = "🚀 Открыть приложение (доступ открыт)"
-
-    # =====================================================
 
     buttons.append([InlineKeyboardButton(label, web_app=WebAppInfo(url=url))])
 
@@ -88,6 +109,7 @@ def menu_keyboard(user_id: int):
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     user_status.setdefault(user_id, "new")
+    save_users()  # <-- сохраняем, если появился новый пользователь
 
     await send_log(
         context.application,
@@ -138,7 +160,7 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "После внесения депозита бот напишет тебе что делать дальше.\n"
                 "--- [ПРОДОЛЖИТЬ](https://gembl.pro/click?o=705&a=1933&sub_id2={user_id}) ---"
             )
-        else:  # deposited
+        else:
             text = (
                 "✅ Бот подключен к сайту - открывай бота, делай ставки и зарабатывай!\n"
                 "--- [ОТКРЫТЬ ИГРУ](https://gembl.pro/click?o=705&a=1933&sub_id2={user_id}) ---"
@@ -156,12 +178,6 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(
             "Бот полностью бесплатный. Разработчик верит в добро и честность людей. "
             "Если ты захочешь поделиться частью своего выигрыша - напиши мне и я пришлю реквизиты для перевода",
-            reply_markup=menu_keyboard(user_id),
-        )
-
-    elif data == "help":
-        await query.edit_message_text(
-            "Если возникли вопросы - напиши мне и я сразу же тебе отвечу и помогу настроить бота.",
             reply_markup=menu_keyboard(user_id),
         )
 
@@ -188,6 +204,7 @@ async def postback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # === РЕГИСТРАЦИЯ ===
     if "registration" in text_lower or "reg" in text_lower:
         user_status[user_id] = "registered"
+        save_users()  # <-- сохраняем
 
         await send_log(context.application, f"📩 Регистрация для {user_id}")
 
@@ -205,6 +222,7 @@ async def postback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # === ДЕПОЗИТ ===
     elif "deposit" in text_lower or "amount" in text_lower:
         user_status[user_id] = "deposited"
+        save_users()  # <-- сохраняем
 
         await send_log(context.application, f"💰 Депозит получен для {user_id}")
 
@@ -223,6 +241,8 @@ async def postback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def main():
     print("🚀 Бот запускается...")
+
+    load_users()  # <-- загружаем статусы при старте
 
     app = Application.builder().token(BOT_TOKEN).build()
 
