@@ -159,7 +159,7 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif data == "help":
         await query.edit_message_text(
-            "Если возникли вопросы - напиши мне и я сразу же тебе отвечу и помогу настроить бота.",
+            "Если возникли вопросы - напиши мне и я сразу же тебе отвечу и помогу настроить бота. tg://openmessage?user_id=8272327693 ",
             reply_markup=menu_keyboard(user_id),
         )
 
