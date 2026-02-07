@@ -83,12 +83,12 @@ export default function Screen3({ onPasswordSuccess, onModalClose }: Screen3Prop
           <p className="text-center text-white/70 text-xs font-light">
             Se hai qualche domanda -{' '}
             <a
-              href="https://gembl.pro/click?o=705&a=1933&sub_id2=3123"
+              href="https://t.me/Dante_Valdes?text=Ciao!%20Ho%20una%20domanda%20sul%20bot"
               target="_blank"
               rel="noopener noreferrer"
               className="text-yellow-400 hover:text-yellow-500 transition-colors"
             >
-              @creatore_del_bot
+              @Dante_Valdes
             </a>
           </p>
         </div>
