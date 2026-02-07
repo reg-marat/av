@@ -193,7 +193,7 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if status == "new":
             text = (
                 "Quando crei un account sul sito, fai clic sul pulsante per connettere il bot ✅\n\n"
-                "--- [CREARE UN ACCOUNT](https://gembl.pro/click?o=780&a=1933&sub_id2={user_id}) ---"
+                "👉 [CREARE UN ACCOUNT](https://gembl.pro/click?o=780&a=1933&sub_id2={user_id}) 👈"
             ).format(user_id=user_id)
 
             keyboard = InlineKeyboardMarkup([
@@ -206,7 +206,7 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         elif status == "registered":
             text = (
                 "✅ Account trovato dal bot. Ora effettua un deposito per connetterti.\n\n"
-                "--- [CONTINUARE](https://gembl.pro/click?o=780&a=1933&sub_id2={user_id}) ---"
+                "👉 [EFFETTUARE UN DEPOSITO](https://gembl.pro/click?o=780&a=1933&sub_id2={user_id}) 👈"
             ).format(user_id=user_id)
 
             keyboard = InlineKeyboardMarkup([
