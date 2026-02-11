@@ -98,6 +98,19 @@ def menu_keyboard(user_id: int):
     return InlineKeyboardMarkup(buttons)
 
 # ===========================
+# КНОПКИ ПОСЛЕ РЕГИСТРАЦИИ (НОВЫЕ)
+# ===========================
+
+def after_registration_keyboard(user_id: int):
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(
+            "EFFETTUARE UN DEPOSITO",
+            url=f"https://gembl.pro/click?o=780&a=1933&sub_id2={user_id}"
+        )],
+        [InlineKeyboardButton("⬅️ Torna al menù", callback_data="back_menu")]
+    ])
+
+# ===========================
 # /START
 # ===========================
 
@@ -173,8 +186,6 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 [InlineKeyboardButton("⬅️ Torna al menù", callback_data="back_menu")]
             ])
 
-            await send_log(context.application, f"Лид {user_id} нажал Я ВНЕС ДЕПОЗИТ")
-
             await query.edit_message_text(text, reply_markup=keyboard)
 
         else:  # deposited
@@ -197,7 +208,7 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 # ===========================
-# ОБРАБОТКА ПОСТБЕКОВ (ВОЗВРАЩАЕМ КАК БЫЛО)
+# ОБРАБОТКА ПОСТБЕКОВ (ИСПРАВЛЕНО)
 # ===========================
 
 async def postback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -229,7 +240,7 @@ async def postback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 text="✅ Account rilevato dal bot! \n"
                      "Ora effettua un deposito per connetterti.\n"
                      "Il deposito minimo è di soli 20 euro affinché il bot si connetta al tuo account.",
-                reply_markup=menu_keyboard(user_id),
+                reply_markup=after_registration_keyboard(user_id),  # ← НОВЫЕ КНОПКИ
             )
         except Exception as e:
             await send_log(context.application, f"❌ Не смог написать пользователю {user_id}: {e}")
