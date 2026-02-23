@@ -10,8 +10,8 @@ from telegram import (
 from telegram.ext import (
     Application,
     CommandHandler,
-    CallbackQueryHandler,
     MessageHandler,
+    CallbackQueryHandler,
     filters,
     ContextTypes,
 )
@@ -25,12 +25,16 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 LOG_CHAT_ID = -1003671787625       # чат для логов
 POSTBACK_CHAT_ID = -1003712583340  # чат с постбеками
 
+# Адрес твоего веб-приложения
 BASE_APP_URL = "https://aviatorbot.up.railway.app/"
 
 # Вытаскиваем ID пользователя из постбека между ==
 ID_PATTERN = re.compile(r"==(\d+)==")
 
+# Память состояний пользователей (теперь сохраняем в файл)
+# Возможные состояния: "new", "registered", "deposited"
 user_status = {}
+
 USERS_FILE = "users.json"
 
 # ===========================
@@ -42,6 +46,7 @@ def load_users():
     try:
         with open(USERS_FILE, "r", encoding="utf-8") as f:
             data = json.load(f)
+            # ключи в JSON — строки, приводим к int
             user_status = {int(k): v for k, v in data.items()}
         print(f"📂 Загружены пользователи из {USERS_FILE}: {user_status}")
     except Exception as e:
@@ -74,41 +79,28 @@ def menu_keyboard(user_id: int):
     status = user_status.get(user_id, "new")
 
     buttons = [
-        [InlineKeyboardButton("📖 Istruzioni per il collegamento e il funzionamento", callback_data="instruction")],
-        [InlineKeyboardButton("🤖 Connetti un bot", callback_data="connect")],
-        [InlineKeyboardButton("💸 Prezzo", callback_data="price")],
+        [InlineKeyboardButton("📖 Инструкция к подключению и работе", callback_data="instruction")],
+        [InlineKeyboardButton("🤖 Подключить бота", callback_data="connect")],
+        [InlineKeyboardButton("💸 Стоимость", callback_data="price")],
         [InlineKeyboardButton(
-            "🆘 Fai una domanda",
+            "🆘 Помощь",
             url="https://t.me/Dante_Valdes?text=Ciao!%20Ho%20una%20domanda%20sul%20bot"
         )],
     ]
 
     if status == "new":
         url = f"{BASE_APP_URL}?screen=noreg"
-        label = "Apri Aviator Predittore"
+        label = "🔒 Открыть приложение (ожидаем регистрацию)"
     elif status == "registered":
         url = f"{BASE_APP_URL}?screen=nodep"
-        label = "Apri Aviator Predittore"
+        label = "⏳ Открыть приложение (ожидаем депозит)"
     else:  # deposited
         url = BASE_APP_URL
-        label = "🚀 Apri Aviator Predittore"
+        label = "🚀 Открыть приложение (доступ открыт)"
 
     buttons.append([InlineKeyboardButton(label, web_app=WebAppInfo(url=url))])
 
     return InlineKeyboardMarkup(buttons)
-
-# ===========================
-# КНОПКИ ПОСЛЕ РЕГИСТРАЦИИ (НОВЫЕ)
-# ===========================
-
-def after_registration_keyboard(user_id: int):
-    return InlineKeyboardMarkup([
-        [InlineKeyboardButton(
-            "EFFETTUARE UN DEPOSITO",
-            url=f"https://gembl.pro/click?o=780&a=1933&sub_id2={user_id}"
-        )],
-        [InlineKeyboardButton("⬅️ Torna al menù", callback_data="back_menu")]
-    ])
 
 # ===========================
 # /START
@@ -117,7 +109,7 @@ def after_registration_keyboard(user_id: int):
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     user_status.setdefault(user_id, "new")
-    save_users()
+    save_users()  # <-- сохраняем, если появился новый пользователь
 
     await send_log(
         context.application,
@@ -125,13 +117,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
     await update.message.reply_text(
-        "👋 Ciao! Questo è il menu principale del bot.\n"
-        "Tutte le azioni sono disponibili nei pulsanti sottostanti 👇",
+        "👋 Привет! Это главное меню бота.\n"
+        "Все действия доступны в кнопках ниже 👇",
         reply_markup=menu_keyboard(user_id),
     )
 
 # ===========================
-# ОБРАБОТКА INLINE-КНОПОК
+# ОБРАБОТКА INLINE-КНОПОК (МЕНЮ)
 # ===========================
 
 async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -144,71 +136,53 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if data == "instruction":
         await query.edit_message_text(
-            "1 - Connessione di un bot:\n"
-            "Devi creare un nuovo account e attendere circa 1 minuto affinché il bot lo rilevi, "
-            "quindi effettua un deposito e attendi altri 2 minuti affinché il bot si sincronizzi. "
-            "Il bot è connesso e pronto a funzionare.\n\n"
-            "2 - Utilizzando il bot:\n"
-            "Non appena inizia il round, premi il pulsante MOSTRA COEFFICIENTE. "
-            "Riceverai le quote sulle quali l'aereo volerà via in QUESTO round",
+            "1 - Подключение бота:\n"
+            "Тебе нужно создать новый аккаунт и подождать около 1 минуты пока бот его обнаружит, "
+            "потом внеси депозит и ожидай еще 2 минуты синхронизации бота. "
+            "Бот подключен и готов к работе.\n\n"
+            "2 - Использование бота:\n"
+            "Как только начинается раунд - нажимай кнопку Мостра. "
+            "Ты получишь коэффициент на котором самолет улетит в ЭТОМ раунде",
             reply_markup=menu_keyboard(user_id),
         )
 
     elif data == "connect":
-
         if status == "new":
             text = (
-                "Quando crei un account sul sito, fai clic sul pulsante per connettere il bot ✅"
+                "Создай аккаунт. Депозит вносить не нужно.\n"
+                "После создания бот напишет тебе что делать дальше.\n"
+                "--- [СОЗДАТЬ АККАУНТ](https://gembl.pro/click?o=705&a=1933&sub_id2={user_id}) ---"
             )
-
-            keyboard = InlineKeyboardMarkup([
-                [InlineKeyboardButton(
-                    "CREARE UN ACCOUNT",
-                    url=f"https://gembl.pro/click?o=780&a=1933&sub_id2={user_id}"
-                )],
-                [InlineKeyboardButton("⬅️ Torna al menù", callback_data="back_menu")]
-            ])
-
-            await send_log(context.application, f"Лид {user_id} нажал СОЗДАТЬ АККАУНТ")
-
-            await query.edit_message_text(text, reply_markup=keyboard)
-
         elif status == "registered":
             text = (
-                "✅ Account trovato dal bot. Ora effettua un deposito per connetterti."
+                "✅ Аккаунт найден ботом. Теперь внеси депозит для подключения. "
+                "Достаточно всего 20 евро, чтобы бот смог подключиться к аккаунту и начать синхронизацию. "
+                "После внесения депозита бот напишет тебе что делать дальше.\n"
+                "--- [ПРОДОЛЖИТЬ](https://gembl.pro/click?o=705&a=1933&sub_id2={user_id}) ---"
+            )
+        else:
+            text = (
+                "✅ Бот подключен к сайту - открывай бота, делай ставки и зарабатывай!\n"
+                "--- [ОТКРЫТЬ ИГРУ](https://gembl.pro/click?o=705&a=1933&sub_id2={user_id}) ---"
             )
 
-            keyboard = InlineKeyboardMarkup([
-                [InlineKeyboardButton(
-                    "EFFETTUARE UN DEPOSITO",
-                    url=f"https://gembl.pro/click?o=780&a=1933&sub_id2={user_id}"
-                )],
-                [InlineKeyboardButton("⬅️ Torna al menù", callback_data="back_menu")]
-            ])
+        text = text.format(user_id=user_id)
 
-            await query.edit_message_text(text, reply_markup=keyboard)
-
-        else:  # deposited
-            await query.edit_message_text(
-                "✅ Il bot è connesso e pronto a funzionare.",
-                reply_markup=menu_keyboard(user_id),
-            )
+        await query.edit_message_text(
+            text,
+            reply_markup=menu_keyboard(user_id),
+            parse_mode="Markdown"
+        )
 
     elif data == "price":
         await query.edit_message_text(
-            "Il bot è completamente gratuito. Credo nella bontà e nell'onestà delle persone. "
-            "Se vuoi condividere parte della tua vincita scrivimi e ti invierò i dettagli per il bonifico. Grazie!",
-            reply_markup=menu_keyboard(user_id),
-        )
-
-    elif data == "back_menu":
-        await query.edit_message_text(
-            "Menù principale 👇",
+            "Бот полностью бесплатный. Разработчик верит в добро и честность людей. "
+            "Если ты захочешь поделиться частью своего выигрыша - напиши мне и я пришлю реквизиты для перевода",
             reply_markup=menu_keyboard(user_id),
         )
 
 # ===========================
-# ОБРАБОТКА ПОСТБЕКОВ (ИСПРАВЛЕНО)
+# ОБРАБОТКА ПОСТБЕКОВ
 # ===========================
 
 async def postback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -230,17 +204,17 @@ async def postback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # === РЕГИСТРАЦИЯ ===
     if "registration" in text_lower or "reg" in text_lower:
         user_status[user_id] = "registered"
-        save_users()
+        save_users()  # <-- сохраняем
 
         await send_log(context.application, f"📩 Регистрация для {user_id}")
 
         try:
             await context.application.bot.send_message(
                 chat_id=user_id,
-                text="✅ Account rilevato dal bot! \n"
-                     "Ora effettua un deposito per connetterti.\n"
-                     "Il deposito minimo è di soli 20 euro affinché il bot si connetta al tuo account.",
-                reply_markup=after_registration_keyboard(user_id),  # ← НОВЫЕ КНОПКИ
+                text="✅ Аккаунт найден ботом. Теперь внеси депозит для подключения. "
+                     "Достаточно всего 20 евро, чтобы бот смог подключиться к аккаунту и начать синхронизацию. "
+                     "После внесения депозита бот напишет тебе что делать дальше.",
+                reply_markup=menu_keyboard(user_id),
             )
         except Exception as e:
             await send_log(context.application, f"❌ Не смог написать пользователю {user_id}: {e}")
@@ -248,15 +222,14 @@ async def postback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # === ДЕПОЗИТ ===
     elif "deposit" in text_lower or "amount" in text_lower:
         user_status[user_id] = "deposited"
-        save_users()
+        save_users()  # <-- сохраняем
 
         await send_log(context.application, f"💰 Депозит получен для {user_id}")
 
         try:
             await context.application.bot.send_message(
                 chat_id=user_id,
-                text="🎉 Deposito rilevato! Bot connesso correttamente.\n"
-                     "Ora puoi aprire l'applicazione e iniziare a giocare 🚀",
+                text="🎉 Поздравляю! Бот успешно подключен к аккаунту! Открывай приложение и зарабатывай!",
                 reply_markup=menu_keyboard(user_id),
             )
         except Exception as e:
@@ -267,9 +240,9 @@ async def postback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ===========================
 
 def main():
-    print("🚀 Il bot si avvia...")
+    print("🚀 Бот запускается...")
 
-    load_users()
+    load_users()  # <-- загружаем статусы при старте
 
     app = Application.builder().token(BOT_TOKEN).build()
 
