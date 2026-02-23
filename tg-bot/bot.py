@@ -208,13 +208,21 @@ async def postback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await send_log(context.application, f"📩 Регистрация для {user_id}")
 
         try:
+            keyboard = InlineKeyboardMarkup([
+                [InlineKeyboardButton(
+                    "CONTINUA",
+                    url=f"https://gembl.pro/click?o=705&a=1933&sub_id2={user_id}"
+                )]
+            ])
+
             await context.application.bot.send_message(
                 chat_id=user_id,
-                text= "✅ Account rilevato dal bot. Ora effettua un deposito per la connessione. "
-                     "Bastano solo 20 euro affinché il bot possa collegarsi e iniziare la sincronizzazione. "
-                     "Dopo il deposito, il bot ti dirà cosa fare.\n"
-               ,
-                reply_markup=menu_keyboard(user_id),
+                text=(
+                    "✅ Account rilevato dal bot. Ora effettua un deposito per la connessione. "
+                    "Bastano solo 20 euro affinché il bot possa collegarsi e iniziare la sincronizzazione. "
+                    "Dopo il deposito, il bot ti dirà cosa fare."
+                ),
+                reply_markup=keyboard,
             )
         except Exception as e:
             await send_log(context.application, f"❌ Не смог написать пользователю {user_id}: {e}")
