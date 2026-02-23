@@ -133,6 +133,12 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     status = user_status.get(user_id, "new")
 
+    # ЛОГ ЛЮБОГО НАЖАТИЯ INLINE-КНОПКИ
+    await send_log(
+        context.application,
+        f"Пользователь {user_id} нажал inline-кнопку '{data}' (статус: {status})"
+    )
+
     if data == "instruction":
         await query.edit_message_text(
             "1 - Connessione del bot:\n"
