@@ -165,19 +165,19 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             text = (
                 "Crea un account. Non è necessario effettuare un deposito.\n"
                 "Dopo la creazione, il bot ti dirà cosa fare.\n"
-                "--- [CREA ACCOUNT](https://gembl.pro/click?o=705&a=1933&sub_id2={user_id}) ---"
+                "--- [CREA ACCOUNT](https://gembl.pro/click?o=780&a=1933&sub_id2={user_id}) ---"
             )
         elif status == "registered":
             text = (
                 "✅ Account rilevato dal bot. Ora effettua un deposito per la connessione. "
                 "Bastano solo 20 euro affinché il bot possa collegarsi e iniziare la sincronizzazione. "
                 "Dopo il deposito, il bot ti dirà cosa fare.\n"
-                "--- [CONTINUA](https://gembl.pro/click?o=705&a=1933&sub_id2={user_id}) ---"
+                "--- [CONTINUA](https://gembl.pro/click?o=780&a=1933&sub_id2={user_id}) ---"
             )
         else:
             text = (
                 "✅ Il bot è collegato al sito — apri il bot, piazza le puntate e guadagna!\n"
-                "--- [APRI IL GIOCO](https://gembl.pro/click?o=705&a=1933&sub_id2={user_id}) ---"
+                "--- [APRI IL GIOCO](https://gembl.pro/click?o=780&a=1933&sub_id2={user_id}) ---"
             )
 
         text = text.format(user_id=user_id)
@@ -229,7 +229,7 @@ async def postback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             keyboard = InlineKeyboardMarkup([
                 [InlineKeyboardButton(
                     "CONTINUA",
-                    url=f"https://gembl.pro/click?o=705&a=1933&sub_id2={user_id}"
+                    url=f"https://gembl.pro/click?o=780&a=1933&sub_id2={user_id}"
                 )]
             ])
 
